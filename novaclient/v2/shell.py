@@ -2819,6 +2819,8 @@ def _print_absolute_limits(limits):
         'maxTotalCores': {'name': 'Cores', 'type': 'max'},
         'totalRAMUsed': {'name': 'RAM', 'type': 'used'},
         'maxTotalRAMSize': {'name': 'RAM', 'type': 'max'},
+        'totalLocalGBUsed': {'name': 'Local GB', 'type': 'used'},
+        'maxLocalGBSize': {'name': 'Local GB', 'type': 'max'},
         'totalInstancesUsed': {'name': 'Instances', 'type': 'used'},
         'maxTotalInstances': {'name': 'Instances', 'type': 'max'},
         'totalFloatingIpsUsed': {'name': 'FloatingIps', 'type': 'used'},
@@ -3898,7 +3900,7 @@ def do_ssh(cs, args):
 # return floating_ips, fixed_ips, security_groups or security_group_members
 # as those are deprecated as networking service proxies and/or because
 # nova-network is deprecated. Similar to the 2.36 microversion.
-_quota_resources = ['instances', 'cores', 'ram',
+_quota_resources = ['instances', 'cores', 'ram', 'local_gb',
                     'floating_ips', 'fixed_ips', 'metadata_items',
                     'injected_files', 'injected_file_content_bytes',
                     'injected_file_path_bytes', 'key_pairs',
@@ -4127,6 +4129,11 @@ def do_quota_update(cs, args):
     type=int, default=None,
     help=_('New value for the "ram" quota.'))
 @utils.arg(
+    '--local-gb',
+    metavar='<local-gb>',
+    type=int, default=None,
+    help=_('New value for the "local-gb" quota.'))
+@utils.arg(
     '--metadata-items',
     metavar='<metadata-items>',
     type=int,
@@ -4178,6 +4185,9 @@ def do_quota_update(cs, args):
 def do_quota_update(cs, args):
     """Update the quotas for a tenant/user."""
 
+    if args.local_gb and cs.api_version < api_versions.APIVersion('2.54'):
+        raise exceptions.CommandError(
+            "'local-gb' quota cannot be set with current microversion.")
     _quota_update(cs.quotas, args.tenant, args)
 
 
@@ -4327,6 +4337,11 @@ def do_quota_class_update(cs, args):
     type=int, default=None,
     help=_('New value for the "ram" quota.'))
 @utils.arg(
+    '--local-gb',
+    metavar='<local-gb>',
+    type=int, default=None,
+    help=_('New value for the "local-gb" quota.'))
+@utils.arg(
     '--metadata-items',
     metavar='<metadata-items>',
     type=int,
@@ -4371,6 +4386,9 @@ def do_quota_class_update(cs, args):
 def do_quota_class_update(cs, args):
     """Update the quotas for a quota class."""
 
+    if args.local_gb and cs.api_version < api_versions.APIVersion('2.54'):
+        raise exceptions.CommandError(
+            "'local_gb' quota cannot be set with current microversion.")
     _quota_update(cs.quota_classes, args.class_name, args)
 
 

@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Add a flag '--local-gb' which allows manipulating a new resource's
+    quota 'local_gb'.
